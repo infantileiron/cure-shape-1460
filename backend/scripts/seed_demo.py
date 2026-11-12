@@ -6,9 +6,10 @@ from src.services.analysis import analyze
 from src.utils.security import hash_password
 from src.utils.time import now
 from src.utils.serialization import serialize
+from src.config.migrations import apply_compat_migrations
 
 def seed():
- Base.metadata.create_all(engine)
+ apply_compat_migrations(engine)
  with Session() as db:
   for role in ('admin','analyst','viewer'):
    if not db.get(User,role):db.add(User(id=role,email=role+'@tanyuan.demo',password=hash_password('Curve2026!'),role=role))
@@ -29,7 +30,9 @@ def seed():
   if not db.get(ShapeRun,'demo-run'):db.add(ShapeRun(id='demo-run',study_id='demo-study',status='completed',result=analyze(db.get(ShapeStudy,'demo-study').snapshot),error='',created_at=now()));db.flush()
   if not db.get(ClusterReview,'demo-review'):
    clusters=db.get(ShapeRun,'demo-run').result['tree']['clusters'];names=[{'cluster_id':c['cluster_id'],'name':('缓升固化' if i==0 else '延迟上升' if i==1 else '尖峰待核' if i==2 else '曲线族')+'·'+c['cluster_id']} for i,c in enumerate(clusters)]
-   db.add(ClusterReview(id='demo-review',run_id='demo-run',version=1,names=names,note='以完整路径、距离矩阵和complete-link树复核；形态簇不是强度或质量等级，尖峰与时移需回到模拟原始读数解释。',decision='accepted',author='analyst@tanyuan.demo',created_at=now()));db.flush()
-  if not db.get(Report,'demo-report'):db.add(Report(id='demo-report',run_id='demo-run',review_id='demo-review',title='滩原养护样·形态归并复核稿',published_by='admin@tanyuan.demo',created_at=now()))
+   db.add(ClusterReview(id='demo-review',run_id='demo-run',version=1,base_version=0,names=names,note='以完整路径、距离矩阵和complete-link树复核；形态簇不是强度或质量等级，尖峰与时移需回到模拟原始读数解释。',decision='accepted',author='analyst@tanyuan.demo',created_at=now()));db.flush()
+  if not db.get(Report,'demo-report'):
+   run=db.get(ShapeRun,'demo-run');review=db.get(ClusterReview,'demo-review');title='滩原养护样·形态归并复核稿'
+   db.add(Report(id='demo-report',run_id='demo-run',review_id='demo-review',review_version=review.version,title=title,snapshot={'run_id':run.id,'checksum':run.result['checksum'],'review_id':review.id,'review_version':review.version,'title':title,'names':review.names,'clusters':run.result['tree']['clusters'],'policy':run.result['policy']},published_by='admin@tanyuan.demo',created_at=now()))
   db.commit();return {m.__tablename__:db.scalar(select(func.count()).select_from(m)) for m in (User,CurveDataset,AlignmentPolicy,ShapeStudy,ShapeRun,ClusterReview,Report)}
 if __name__=='__main__':print(json.dumps(seed(),ensure_ascii=False))

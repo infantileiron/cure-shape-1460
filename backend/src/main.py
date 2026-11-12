@@ -8,9 +8,11 @@ from src.config.database import engine
 from src.config.settings import SEED_DEMO,REDIS_URL
 from src.middlewares.errors import ErrorMiddleware
 from src.middlewares.audit import AuditMiddleware
+from src.config.migrations import apply_compat_migrations
 from src.routes import auth,datasets,policies,studies,runs,reviews,reports,audit
 @asynccontextmanager
 async def lifespan(app):
+ apply_compat_migrations()
  if SEED_DEMO:
   try:
    from scripts.seed_demo import seed

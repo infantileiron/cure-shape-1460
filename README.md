@@ -13,7 +13,7 @@
 5. 09:20 提交 Redis worker，计算1128个独立配对、距离矩阵、完整47次归并和切树。
 6. 09:25 点击矩阵单元，核对具体曲线的累计平方差、最优路径长度与完整索引。
 7. 09:30 查看 complete-link 树及最大距离见证，为每簇人工命名并提交接受/待补充版本。
-8. 09:40 负责人批准最新接受版本，归档 CSV；旧名称和旧归档保留原版本。
+8. 09:40 负责人从版本清单明确选择当前最新的接受版本批准，冻结名称、版本与校验和的归档快照；旧名称和旧归档保留原版本。
 
 ## 启动
 
@@ -43,7 +43,7 @@ docker compose exec backend python -m scripts.seed_demo
 
 数据集必须有2至64条曲线，各64个有限值，共用64个严格递增、固定间隔分钟时间点。重复时间、缺点、非等距、重复曲线ID和无穷值拒绝；不重采样、不填零。曲线ID是唯一英数短ID。`raw` 保留反应指数的量级；`zscore` 按每曲线总体标准差标准化，常量或近常量使任务明确失败，不生成伪零曲线。两个口径的距离/阈值单位不同，需要分别定义。
 
-六实体为 CurveDataset、AlignmentPolicy、ShapeStudy、ShapeRun、ClusterReview、Report，贯穿表、schema、service、route、前端 API 与页面。研究任务冻结数据/口径；运行结果持久化到 PostgreSQL JSON。复核每次新增不可变版本，必须覆盖当前所有簇；Report绑定最新接受复核ID。后续新复核不会改变旧CSV中的名称、版本和校验和。
+六实体为 CurveDataset、AlignmentPolicy、ShapeStudy、ShapeRun、ClusterReview、Report，贯穿表、schema、service、route、前端 API 与页面。研究任务冻结数据/口径；运行结果持久化到 PostgreSQL JSON。复核每次新增不可变版本，必须覆盖当前所有簇。保存时携带页面打开时的基线版本 `base_version`：服务端在事务内锁定运行行再取号，只有基线等于当前最新版本才写入 `version+1`；版本号连续且 `(run_id, version)` 唯一，旧页面重复保存返回 409 `review_version_conflict`（含基线/最新版本号）并保留用户填写内容，不会静默覆盖他人提交。Report 必须显式绑定 `review_id`，只允许批准所选的最新接受版本；所选版本已有更新复核或结论为待补充时拒绝。归档时冻结快照（名称、复核版本、校验和、簇成员与口径），后续新复核或重跑都不改变旧CSV中的名称、版本、校验和和簇归属；复核页标出本页基线版本、库中最新版本及冲突原因。
 
 ## 技术与目录
 
