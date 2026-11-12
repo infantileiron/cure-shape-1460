@@ -1,0 +1,13 @@
+export type Role='admin'|'analyst'|'viewer';
+export type Curve={curve_id:string;label:string;values:number[];raw_values?:number[];mean?:number;population_sd?:number};
+export type Dataset={id:string;name:string;source:string;times:number[];curves:Curve[];created_at:string};
+export type Policy={id:string;name:string;normalization:'raw'|'zscore';window:number;threshold:number;created_at:string};
+export type Study={id:string;name:string;dataset_id:string;policy_id:string;snapshot:{dataset:Dataset;policy:Policy};created_at:string};
+export type Pair={curve_a:string;curve_b:string;cost:number;path_length:number;distance:number;path:number[][]};
+export type Merge={node_id:string;left:string;right:string;distance:number;members:string[];max_witness:string[]};
+export type Cluster={cluster_id:string;members:string[];diameter:number};
+export type Result={ids:string[];matrix:number[][];pairs:Pair[];tree:{merges:Merge[];clusters:Cluster[];threshold:number};curves:Curve[];times:number[];meta:{curve_count:number;point_count:number;step_minutes:number;span_minutes:number};policy:Policy;checksum:string;assumptions:string[]};
+export type Run={id:string;study_id:string;status:'queued'|'running'|'completed'|'failed';result:Result;error:string;created_at:string};
+export type Review={id:string;run_id:string;version:number;names:{cluster_id:string;name:string}[];note:string;decision:'accepted'|'needs_changes';author:string;created_at:string};
+export type Report={id:string;run_id:string;review_id:string;title:string;published_by:string;created_at:string};
+export type Audit={id:string;actor:string;action:string;status:number;created_at:string};

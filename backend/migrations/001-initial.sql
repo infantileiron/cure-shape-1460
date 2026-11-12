@@ -1,0 +1,3 @@
+-- Declarative schema source: src/models/*.py
+-- Initial startup uses SQLAlchemy metadata.create_all; no destructive migration or seed overwrite.
+-- Six domain tables + users + audit_events; immutable snapshots and review versions.

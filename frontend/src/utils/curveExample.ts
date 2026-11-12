@@ -1,0 +1,1 @@
+export function curveExample(){const times=Array.from({length:64},(_,i)=>i*2);return {name:'新养护样·3曲线',source:'tanyuan_new_cure.json',times,curves:[0,1,2].map(k=>({curve_id:'NEW-'+(k+1),label:'模拟新试件'+(k+1),values:times.map(t=>Number((8+78/(1+Math.exp(-.1*(t-45-k*7)))).toFixed(5)))}))}}
